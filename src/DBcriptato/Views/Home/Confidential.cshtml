@@ -1,0 +1,60 @@
+﻿<script src="~/script/sjcl.js"></script>
+<h1>Confidential</h1>
+<p>Only those who have the key can see the written message. <br />
+    The message is encrypted on the client side and sent encrypted. <br />
+    Administrators can not even see it. <br />
+    Be careful if you lose your password the message can no longer be read.</p>
+
+<form class="form-group" method="post" id="myform">
+    <p>Enter your Message:</p>
+    <textarea rows="4" cols="75" id="text" class="form-control"></textarea>
+    <br />
+    <p>Enter your Key:</p>
+    <input style="float:left;margin-right:30px;" type="password" id="key" class="form-control"/>
+    <button type="button" onclick="trueKey()" class="btn btn-default">Check your Key</button>
+    <hr />
+    <p id="check">Check if the hash of your Key is in the Database.</p>
+    <br />
+    <button type="button" onclick="actionCrypt()" class="form-control">Save</button>
+</form>
+
+<h3 id="result"></h3>
+
+<script>
+    function trueKey() {
+        var bitArray = sjcl.hash.sha256.hash(document.getElementById("key").value);
+        var key = sjcl.codec.hex.fromBits(bitArray) + "";
+        $.ajax({
+            type: 'POST',
+            url: 'CheckKey',
+            data: JSON.stringify(key),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (res) {
+                if (res) {
+                    document.getElementById("check").innerHTML = "<strong>Key found!</strong>";
+                }else{
+                    document.getElementById("check").innerHTML = "<strong>Key not found!</strong>";
+                }
+            }
+        })
+    }
+
+    function actionCrypt() {
+        var key = document.getElementById("key").value;
+        var text = document.getElementById("text").value;
+        var result = document.getElementById("result");
+        var crypt = sjcl.encrypt(key, text);
+        $.ajax({
+            type: 'POST',
+            url: 'Confidential',
+            data: crypt,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            async: false,
+        }).success(function () {
+            result.innerHTML = "Uploaded!";
+            document.getElementById('myform').reset();
+        })
+    }
+</script>

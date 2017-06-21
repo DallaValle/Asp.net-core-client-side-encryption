@@ -1,0 +1,31 @@
+﻿<script src="~/script/sjcl.js"></script>
+<h1>Add a key to encrypt</h1>
+<p>Only a hash will be saved in the system to verify that the key you entered is the one you used before. 
+    <br /> Hash formation takes place at Client side, no key is transmitted.</p>
+<form class="form-group" method="post">
+    <p>Key:</p>
+    <input type="password" class="form-control" id="key"/>
+    <br />
+    <button type="button" onclick="generateHash()" class="form-control">Save</button>
+</form>
+<p id="result"></p>
+<script>
+    function generateHash() {
+        var key = document.getElementById("key").value;
+        var bitArray = sjcl.hash.sha256.hash(key);
+        var digest_sha256 = sjcl.codec.hex.fromBits(bitArray);
+        document.getElementById("result").innerHTML = digest_sha256;
+        var key = digest_sha256 + "";
+    $.ajax({
+        type: 'POST',
+        url: 'AddKey',
+        data: JSON.stringify(key),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        async: false,
+    }).success(window.location.href = 'Index')
+    }
+</script>
+
+<h3>Attention!</h3>
+<p>Since the key is not stored in the system, we recommend using a KeySorage</p>

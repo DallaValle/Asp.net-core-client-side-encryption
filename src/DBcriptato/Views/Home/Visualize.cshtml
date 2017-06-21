@@ -1,0 +1,64 @@
+﻿@model List<Ciphertext>
+<script src="~/script/sjcl.js"></script>
+<h1>Confidential data display</h1>
+<p id="encrypt">
+    <script>var allData = [];</script>
+    @foreach (var item in Model)
+    {
+        <script>
+            var data = @Json.Serialize(item);
+            delete data.usersKeyId;
+            delete data.ciphertextId;
+            allData.push(data);
+        </script>
+    }
+</p>
+<hr />
+<form class="form-group" method="post">
+    <p>Key:</p>
+    <input style="float:left;margin-right:30px;" type="password" id="key" class="form-control" />
+    <button type="button" onclick="trueKey()" class="btn btn-default">Check your Key</button>
+    <hr />
+    <p id="check">Check if the hash of your Key is in the Database.</p>
+    <br />
+    <button type="button" class="form-control" onclick="actionDecrypt()">Descripta</button>
+</form>
+<p id="decrypt"></p>
+
+<script>
+    function trueKey() {
+        var bitArray = sjcl.hash.sha256.hash(document.getElementById("key").value);
+        var key = sjcl.codec.hex.fromBits(bitArray) + "";
+        $.ajax({
+            type: 'POST',
+            url: 'CheckKey',
+            data: JSON.stringify(key),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (res) {
+                if (res) {
+                    document.getElementById("check").innerHTML = "<strong>Key found!</strong>";
+                }else{
+                    document.getElementById("check").innerHTML = "<strong>Key not found!</strong>";
+                }
+            }
+        })
+    }
+
+    function actionDecrypt(){
+        document.getElementById("decrypt").innerHTML = "";
+        var key = document.getElementById("key").value;
+        allData.forEach(function(item){
+            item = JSON.stringify(item)
+            try{
+                var decrypt = sjcl.decrypt(key, item);
+            }catch(err){
+                //
+                document.getElementById("decrypt").innerHTML += "File not compatible with this Key.<hr>";
+            }
+            if(decrypt != undefined){
+                document.getElementById("decrypt").innerHTML += decrypt+"<hr>";
+            }
+        });
+    }
+</script>
