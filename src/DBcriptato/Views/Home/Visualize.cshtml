@@ -53,11 +53,10 @@
             try{
                 var decrypt = sjcl.decrypt(key, item);
             }catch(err){
-                //
-                document.getElementById("decrypt").innerHTML += "File not compatible with this Key.<hr>";
+                //document.getElementById("decrypt").innerHTML += "File not compatible with this Key.<hr>";
             }
             if(decrypt != undefined){
-                document.getElementById("decrypt").innerHTML += decrypt+"<hr>";
+                document.getElementById("decrypt").innerHTML += decrypt + "<hr>";
             }
         });
     }
